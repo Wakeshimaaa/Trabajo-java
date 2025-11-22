@@ -24,8 +24,7 @@ jobs:
 
       - name: ⚙️ Instalar WiX Toolset
         # WiX Toolset es necesario para que jpackage cree el archivo .msi en Windows
-        run: |
-          choco install wixtoolset -y 
+        run: choco install wixtoolset -y
 
       - name: 📦 Instalar dependencias y Compilar (Maven)
         run: mvn clean package
