@@ -1,0 +1,42 @@
+name: CI/CD Installer Release
+
+on:
+  push:
+    # Ejecutar la pipeline cuando se hace un 'push' a la rama principal (main)
+    branches: [ main ]
+  release:
+    # Ejecutar también cuando se crea un nuevo Release en GitHub
+    types: [ created ]
+
+jobs:
+  build_windows_installer:
+    runs-on: windows-latest  # Usar un ambiente Windows (requerido para el MSI)
+
+    steps:
+      - name: ⬇️ Checkout del Código
+        uses: actions/checkout@v4
+
+      - name: ☕ Configurar JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+
+      - name: ⚙️ Instalar WiX Toolset
+        # WiX Toolset es necesario para que jpackage cree el archivo .msi en Windows
+        run: |
+          choco install wixtoolset -y 
+
+      - name: 📦 Instalar dependencias y Compilar (Maven)
+        run: mvn clean package
+
+      - name: 🏗️ Generar Instalador MSI y Checksum
+        # Ejecuta el script que ahora funciona localmente
+        run: .\build-installer.bat
+
+      - name: ⬆️ Subir Artefactos de Instalación
+        uses: actions/upload-artifact@v4
+        with:
+          name: instalador-windows-${{ github.sha }}
+          path: installer_output/
+          if-no-files-found: error
